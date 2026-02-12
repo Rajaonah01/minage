@@ -1,0 +1,28 @@
+{
+  "name": "farming-game",
+  "version": "1.0.0",
+  "description": "Jeu de farming avec retraits USDT BEP-20",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.5",
+    "body-parser": "^1.20.4",
+    "coin-hive-stratum": "^2.6.11",
+    "cors": "^2.8.6",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "fs-extra": "^11.3.3",
+    "net": "^1.0.2",
+    "node-cron": "^4.2.1",
+    "qrcode": "^1.5.4",
+    "web3": "^4.16.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

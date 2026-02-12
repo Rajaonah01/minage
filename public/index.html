@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>⛏️ HASHVAULT MINER - Gagnez des coins !</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(145deg, #1a1e24, #0f1217);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .miner-card {
+            background: rgba(20, 25, 35, 0.8);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid #ffd700;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(255,215,0,0.2);
+        }
+        .balance {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        .balance-amount {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+        .pool-status {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        .pool-connected {
+            color: #00ff88;
+        }
+        .pool-disconnected {
+            color: #ff6b6b;
+        }
+        .btn-mine {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(45deg, #00c853, #00e676);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(0,200,83,0.3);
+        }
+        .btn-mine.stop {
+            background: linear-gradient(45deg, #ff5252, #ff1744);
+            box-shadow: 0 5px 20px rgba(255,82,82,0.3);
+        }
+        .btn-mine:hover {
+            transform: translateY(-2px);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: rgba(0,0,0,0.6);
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .withdraw-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .withdraw-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(52,152,219,0.4);
+        }
+        .withdraw-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .cpu-select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            color: white;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .cpu-select option {
+            background: #1a1e24;
+        }
+        .footer-info {
+            color: #a0a0a0;
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .error-message {
+            background: rgba(255,82,82,0.2);
+            color: #ff6b6b;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .success-message {
+            background: rgba(46,204,113,0.2);
+            color: #00ff88;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .hashvault-badge {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid #ffd700;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="miner-card">
+            <h1 style="text-align: center; color: #ffd700; margin-bottom: 10px;">
+                ⛏️ HASHVAULT MINER
+            </h1>
+            
+            <!-- BADGE HASHVAULT -->
+            <div class="hashvault-badge">
+                🔐 Connecté à HashVault • Connexion VPS stable
+            </div>
+            
+            <!-- STATUT POOL -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span class="pool-status" id="poolStatus">
+                    🔌 Statut: <span id="poolStatusText" class="pool-disconnected">Déconnecté</span>
+                </span>
+            </div>
+
+            <!-- SOLDE -->
+            <div class="balance">
+                <div style="color: #a0a0a0; margin-bottom: 5px;">💎 SOLDE DE COINS</div>
+                <div class="balance-amount" id="balance">0</div>
+                <div style="color: #ffd700; margin-top: 10px; font-size: 1.1rem;">
+                    ≈ <span id="usdtValue">0.00</span> USDT
+                </div>
+            </div>
+
+            <!-- STATS EN DIRECT -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="hashrate">0</div>
+                    <div class="stat-label">Hash/s</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="totalHashes">0</div>
+                    <div class="stat-label">Total Hashes</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="coinsPerHour">0</div>
+                    <div class="stat-label">Coins/heure</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="sessionTime">00:00</div>
+                    <div class="stat-label">Session</div>
+                </div>
+            </div>
+
+            <!-- MESSAGES -->
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <!-- CHOIX CPU -->
+            <select class="cpu-select" id="cpuSelect">
+                <option value="1">🐢 1 thread (Économie - 5 hashes/s)</option>
+                <option value="2" selected>⚡ 2 threads (Recommandé - 10 hashes/s)</option>
+                <option value="4">🔥 4 threads (Rapide - 20 hashes/s)</option>
+                <option value="8">💀 8 threads (Max - 40 hashes/s)</option>
+            </select>
+
+            <!-- STATUT MINING -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                <span style="color: #a0a0a0;">⚡ Mining:</span>
+                <span id="miningStatus" style="color: #ff6b6b; font-weight: bold;">⛔ Arrêté</span>
+            </div>
+
+            <!-- BOUTON MINING -->
+            <button id="mineBtn" class="btn-mine" onclick="toggleMining()">
+                ⚡ DÉMARRER LE MINING
+            </button>
+
+            <!-- RETRAIT -->
+            <button class="withdraw-btn" id="withdrawBtn" onclick="withdrawCoins()" disabled>
+                💰 RETIRER MES COINS (1000 minimum)
+            </button>
+
+            <!-- STATISTIQUES SERVEUR -->
+            <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span style="color: #a0a0a0;">🌐 Pool:</span>
+                    <span style="color: #ffd700;" id="poolName">HashVault</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #a0a0a0;">⛏️ XMR miné:</span>
+                    <span style="color: #ffd700;" id="xmrMined">0.00000000</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span style="color: #a0a0a0;">👥 Mineurs actifs:</span>
+                    <span style="color: #ffd700;" id="activeMiners">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span style="color: #a0a0a0;">✅ Status:</span>
+                    <span style="color: #00ff88;" id="jobStatus">En attente...</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span style="color: #a0a0a0;">📧 Email:</span>
+                    <span style="color: #a0a0a0;" id="poolEmail">Configuré</span>
+                </div>
+            </div>
+
+            <div class="footer-info">
+                ⚡ 1000 coins = 1 USDT virtuel • Pool: HashVault<br>
+                📱 Mining optimisé • 0.001 coin/hash • Connexion VPS stable !<br>
+                🔐 HashVault accepte les VPS avec email
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        // ========== CONFIGURATION ==========
+        const USER_ID = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
+        let isMining = false;
+        let hashCount = 0;
+        let acceptedCount = 0;
+        let sessionStart = null;
+        let miningInterval = null;
+        let statsInterval = null;
+        
+        // ========== FONCTIONS API ==========
+        
+        async function startMining() {
+            const threads = parseInt(document.getElementById('cpuSelect').value);
+            
+            try {
+                showSuccess('Connexion à HashVault...');
+                
+                const response = await fetch('/api/mining/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        userId: USER_ID,
+                        deviceInfo: {
+                            cores: threads,
+                            model: getDeviceModel()
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    isMining = true;
+                    sessionStart = Date.now();
+                    hashCount = 0;
+                    acceptedCount = 0;
+                    
+                    // UI
+                    document.getElementById('mineBtn').classList.add('stop');
+                    document.getElementById('mineBtn').innerHTML = '🛑 ARRÊTER LE MINING';
+                    document.getElementById('miningStatus').innerHTML = '⛏️ Mining actif sur HashVault';
+                    document.getElementById('miningStatus').style.color = '#00ff88';
+                    document.getElementById('poolStatusText').innerHTML = 'Connecté à HashVault';
+                    document.getElementById('poolStatusText').className = 'pool-connected';
+                    document.getElementById('jobStatus').innerHTML = '⛏️ En attente de job...';
+                    
+                    showSuccess('✅ Mining démarré sur HashVault !');
+                    
+                    // Démarrer le mining
+                    startHashGeneration(threads);
+                    startStatsUpdate();
+                }
+                
+            } catch (error) {
+                showError('Erreur de connexion au serveur');
+                console.error('Erreur startMining:', error);
+            }
+        }
+        
+        function getDeviceModel() {
+            const ua = navigator.userAgent;
+            if (ua.includes('iPhone')) return 'iPhone';
+            if (ua.includes('iPad')) return 'iPad';
+            if (ua.includes('Android')) return 'Android';
+            if (ua.includes('Windows')) return 'Windows';
+            return 'Desktop';
+        }
+        
+        async function stopMining() {
+            isMining = false;
+            
+            if (miningInterval) {
+                clearInterval(miningInterval);
+                miningInterval = null;
+            }
+            if (statsInterval) {
+                clearInterval(statsInterval);
+                statsInterval = null;
+            }
+            
+            // UI
+            document.getElementById('mineBtn').classList.remove('stop');
+            document.getElementById('mineBtn').innerHTML = '⚡ DÉMARRER LE MINING';
+            document.getElementById('miningStatus').innerHTML = '⛔ Arrêté';
+            document.getElementById('miningStatus').style.color = '#ff6b6b';
+            document.getElementById('poolStatusText').innerHTML = 'Déconnecté';
+            document.getElementById('poolStatusText').className = 'pool-disconnected';
+            document.getElementById('jobStatus').innerHTML = '⛔ Arrêté';
+            
+            showSuccess('⛔ Mining arrêté');
+        }
+        
+        function toggleMining() {
+            if (isMining) {
+                stopMining();
+            } else {
+                startMining();
+            }
+        }
+        
+        // ========== GÉNÉRATION DE HASHES STYLE RANDOMX ==========
+        function generateRandomXHash(nonce) {
+            // Simulation d'un hash RandomX (64 caractères hex)
+            const chars = '0123456789abcdef';
+            let hash = '';
+            
+            // Les vrais hash RandomX commencent souvent par 0
+            hash += '0';
+            
+            // Génère le reste du hash
+            for (let i = 1; i < 64; i++) {
+                hash += chars[Math.floor(Math.random() * chars.length)];
+            }
+            
+            return hash;
+        }
+        
+        function startHashGeneration(threads) {
+            const hashRate = threads * 5; // 5 hashes/sec par thread
+            let lastUpdate = Date.now();
+            let hashesThisSecond = 0;
+            
+            if (miningInterval) clearInterval(miningInterval);
+            
+            miningInterval = setInterval(() => {
+                if (!isMining) return;
+                
+                const now = Date.now();
+                
+                // Générer des hashes
+                for (let i = 0; i < threads; i++) {
+                    const nonce = Math.floor(Math.random() * 4294967295);
+                    const hash = generateRandomXHash(nonce);
+                    
+                    hashCount++;
+                    hashesThisSecond++;
+                    
+                    // Envoyer au serveur
+                    submitHash(nonce, hash);
+                }
+                
+                // Mise à jour UI toutes les secondes
+                if (now - lastUpdate >= 1000) {
+                    document.getElementById('hashrate').textContent = Math.min(hashesThisSecond, hashRate);
+                    document.getElementById('totalHashes').textContent = hashCount.toLocaleString();
+                    
+                    // Coins par heure (0.001 coin par hash)
+                    if (sessionStart) {
+                        const coinsPerHour = Math.floor((acceptedCount * 0.001 * 3600) / Math.max(1, (now - sessionStart) / 1000));
+                        document.getElementById('coinsPerHour').textContent = coinsPerHour || 0;
+                    }
+                    
+                    // Temps de session
+                    if (sessionStart) {
+                        const seconds = Math.floor((now - sessionStart) / 1000);
+                        const mins = Math.floor(seconds / 60);
+                        const secs = seconds % 60;
+                        document.getElementById('sessionTime').textContent = 
+                            `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                    }
+                    
+                    hashesThisSecond = 0;
+                    lastUpdate = now;
+                }
+                
+            }, 100); // 10x par seconde
+        }
+        
+        function startStatsUpdate() {
+            if (statsInterval) clearInterval(statsInterval);
+            
+            statsInterval = setInterval(() => {
+                if (isMining) {
+                    loadServerStats();
+                }
+            }, 3000);
+        }
+        
+        async function submitHash(nonce, hash) {
+            try {
+                const response = await fetch('/api/mining/submit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        userId: USER_ID,
+                        nonce: nonce,
+                        hash: hash
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.accepted) {
+                    acceptedCount++;
+                    loadBalance(); // Mettre à jour le solde
+                }
+                
+            } catch (error) {
+                console.error('Erreur soumission hash:', error);
+            }
+        }
+        
+        // ========== CHARGEMENT DU SOLDE ==========
+        async function loadBalance() {
+            try {
+                const response = await fetch(`/api/user/${USER_ID}/balance`);
+                const data = await response.json();
+                
+                document.getElementById('balance').textContent = data.virtualCoins;
+                
+                // Calculer USDT
+                let coinValue = parseInt(data.virtualCoins.replace(/\D/g, '')) || 0;
+                const usdtValue = (coinValue * 0.000001).toFixed(4);
+                document.getElementById('usdtValue').textContent = usdtValue;
+                
+                // Activer/désactiver bouton retrait
+                const withdrawBtn = document.getElementById('withdrawBtn');
+                withdrawBtn.disabled = !data.canWithdraw;
+                withdrawBtn.style.opacity = data.canWithdraw ? '1' : '0.5';
+                
+            } catch (error) {
+                console.error('Erreur chargement solde:', error);
+            }
+        }
+        
+        // ========== RETRAIT ==========
+        async function withdrawCoins() {
+            try {
+                const response = await fetch(`/api/user/${USER_ID}/withdraw`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(`✅ ${data.amount} coins retirés !`);
+                    loadBalance();
+                } else {
+                    showError(data.message || 'Solde insuffisant');
+                }
+                
+            } catch (error) {
+                console.error('Erreur retrait:', error);
+                showError('Erreur lors du retrait');
+            }
+        }
+        
+        // ========== STATS SERVEUR ==========
+        async function loadServerStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const data = await response.json();
+                
+                document.getElementById('poolName').textContent = data.pool || 'HashVault';
+                document.getElementById('xmrMined').textContent = data.xmrEarned || '0.00000000';
+                document.getElementById('activeMiners').textContent = data.activeMiners || '0';
+                
+                if (data.connected) {
+                    document.getElementById('poolStatusText').innerHTML = 'Connecté à HashVault';
+                    document.getElementById('poolStatusText').className = 'pool-connected';
+                }
+                
+                if (data.jobActive) {
+                    document.getElementById('jobStatus').innerHTML = '⛏️ Mining actif';
+                    document.getElementById('jobStatus').style.color = '#00ff88';
+                } else {
+                    document.getElementById('jobStatus').innerHTML = '⏳ En attente...';
+                    document.getElementById('jobStatus').style.color = '#ffd700';
+                }
+                
+            } catch (error) {
+                console.error('Erreur stats serveur:', error);
+            }
+        }
+        
+        // ========== MESSAGES ==========
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = '❌ ' + message;
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.style.display = 'block';
+            successDiv.innerHTML = '✅ ' + message;
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        // ========== INITIALISATION ==========
+        async function init() {
+            await loadBalance();
+            await loadServerStats();
+            
+            // Rafraîchir le solde toutes les 3 secondes
+            setInterval(loadBalance, 3000);
+            
+            console.log('✅ Interface HashVault initialisée', USER_ID);
+            showSuccess('Interface HashVault prête !');
+        }
+        
+        // Démarrer
+        init();
+    </script>
+</body>
+</html>

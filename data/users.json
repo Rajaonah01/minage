@@ -1,0 +1,35 @@
+{
+  "user_kgxa6zh5k": {
+    "virtualBalance": 0.027000000000000017,
+    "totalMined": 0.027000000000000017,
+    "createdAt": 1770887655474
+  },
+  "user_7dnfmvi4o": {
+    "virtualBalance": 0.10900000000000008,
+    "totalMined": 0.10900000000000008,
+    "createdAt": 1770887664995,
+    "lastMine": 1770888142564
+  },
+  "user_9dyju75dw": {
+    "virtualBalance": 0.6300000000000004,
+    "totalMined": 0.6300000000000004,
+    "createdAt": 1770888157078,
+    "lastMine": 1770889635425
+  },
+  "user_9idsyvatz_mlja6jo9": {
+    "virtualBalance": 0,
+    "totalMined": 0,
+    "createdAt": 1770889999344
+  },
+  "user_mjgfcwh3i_mljacled": {
+    "virtualBalance": 0.09400000000000007,
+    "totalMined": 0.09400000000000007,
+    "createdAt": 1770890288371,
+    "lastMine": 1770890655411
+  },
+  "user_qjwadt2sp_mljaoll2": {
+    "virtualBalance": 0,
+    "totalMined": 0,
+    "createdAt": 1770890843228
+  }
+}
