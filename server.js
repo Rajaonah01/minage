@@ -45,36 +45,40 @@ function writeUsers(data) {
     }
 }
 
-// ========== CONFIGURATION HASHVAULT ==========
+// ========== CONFIGURATION HASHVAULT MEGA BOOST ==========
 const CONFIG = {
     XMR_WALLET: process.env.XMR_WALLET || '4285FGc1m5ZdUSi1Dqpdmp2MJZBL3LfiDR88hLLmzH7vDaooQtZ3WM18fd5jDvDeAf7gT6oBPMAB3EVYNG3ZhJX7C3Jea5J',
     
-    // ✅ HASHVAULT - LE SEUL QUI MARCHE !
+    // ✅ HASHVAULT
     POOL_HOST: 'pool.hashvault.pro',
     POOL_PORT: 3333,
     
-    // ✅ EMAIL OBLIGATOIRE - METTEZ LE VÔTRE !
-    PASSWORD: 'anjararajaonah01@email.com',
+    // ✅ EMAIL OBLIGATOIRE
+    PASSWORD: process.env.HASHVAULT_EMAIL || 'anjararajaonah01@email.com',
     
     // ✅ WORKER UNIQUE
-    WORKER: 'render_miner_' + Math.random().toString(36).substr(2, 4),
+    WORKER: 'mega_boost_' + Math.random().toString(36).substr(2, 6),
     
+    // 🚀 MEGA BOOST - 100x PLUS DE COINS !
     VIRTUAL_COINS: {
-        PER_HASH: 0.001,
-        MIN_WITHDRAW: 1000,
-        EXCHANGE_RATE: 0.000001
+        PER_HASH: 0.001,        // Base: 0.001 coin par hash (sera multiplié par 100)
+        BOOST_MULTIPLIER: 100,  // 🚀 x100 de BOOST !
+        MIN_WITHDRAW: 10000,    // 10000 coins minimum (10 USDT virtuel)
+        EXCHANGE_RATE: 0.001,   // 1000 coins = 1 USDT virtuel
+        TARGET_COINS: 10000     // Objectif: 10000 coins
     }
 };
 
-console.log('\n' + '='.repeat(60));
-console.log('🚀 CONFIGURATION HASHVAULT');
-console.log('='.repeat(60));
+console.log('\n' + '='.repeat(70));
+console.log('🚀🚀🚀 MEGA BOOST ACTIVÉ - x100 COINS ! 🚀🚀🚀');
+console.log('='.repeat(70));
 console.log(`🌐 Pool: ${CONFIG.POOL_HOST}:${CONFIG.POOL_PORT}`);
 console.log(`💰 Wallet: ${CONFIG.XMR_WALLET.slice(0,8)}...${CONFIG.XMR_WALLET.slice(-8)}`);
 console.log(`📧 Email: ${CONFIG.PASSWORD}`);
 console.log(`⚙️ Worker: ${CONFIG.WORKER}`);
-console.log(`📁 Data: /tmp/users.json`);
-console.log('='.repeat(60) + '\n');
+console.log(`💎 Coins: ${CONFIG.VIRTUAL_COINS.PER_HASH * CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER} coin/hash (${CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER}x BOOST)`);
+console.log(`🎯 Objectif: ${CONFIG.VIRTUAL_COINS.TARGET_COINS} coins = ${CONFIG.VIRTUAL_COINS.TARGET_COINS * CONFIG.VIRTUAL_COINS.EXCHANGE_RATE} USDT`);
+console.log('='.repeat(70) + '\n');
 
 // ========== MINER HASHVAULT ==========
 class XMRTCPMiner {
@@ -108,18 +112,15 @@ class XMRTCPMiner {
             this.socket.on('connect', () => {
                 console.log('✅✅✅ CONNECTÉ À HASHVAULT !');
                 console.log(`💰 Wallet: ${CONFIG.XMR_WALLET.slice(0,8)}...${CONFIG.XMR_WALLET.slice(-8)}`);
-                console.log(`📧 Email: ${CONFIG.PASSWORD}`);
                 
                 this.isConnecting = false;
                 this.reconnectAttempts = 0;
                 this.loginSent = false;
                 
-                // ✅ ATTENDRE 1 SECONDE AVANT LOGIN
                 setTimeout(() => {
                     this.sendLogin();
                 }, 1000);
                 
-                // Keepalive
                 this.keepAliveInterval = setInterval(() => {
                     if (this.socket && !this.socket.destroyed) {
                         this.send({ id: Date.now(), method: 'keepalived' });
@@ -137,9 +138,7 @@ class XMRTCPMiner {
                         try {
                             const msg = JSON.parse(line);
                             this.handleMessage(msg);
-                        } catch (e) {
-                            // Ignore
-                        }
+                        } catch (e) {}
                     }
                 }
             });
@@ -183,8 +182,8 @@ class XMRTCPMiner {
             method: 'login',
             params: {
                 login: CONFIG.XMR_WALLET,
-                pass: CONFIG.PASSWORD,  // ✅ EMAIL OBLIGATOIRE
-                agent: 'Render-Miner/2.0',
+                pass: CONFIG.PASSWORD,
+                agent: 'MegaBoost-Miner/1.0',
                 algo: 'randomx',
                 worker_id: CONFIG.WORKER
             }
@@ -208,52 +207,41 @@ class XMRTCPMiner {
     }
 
     handleMessage(msg) {
-        // ✅ JOB REÇU - RESTONS CONNECTÉ !
         if (msg.method === 'job') {
             this.jobId = msg.params.job_id;
             this.lastJobTime = Date.now();
-            console.log(`⛏️🔥 JOB REÇU ! ID: ${this.jobId.substring(0,8)}... - MINING ACTIF !`);
+            console.log(`⛏️🔥 JOB REÇU ! ID: ${this.jobId.substring(0,8)}...`);
         }
         
-        // ✅ HASH ACCEPTÉ
         if (msg.result && msg.result.status === 'OK') {
             this.totalHashes++;
             this.xmrEarned += 0.0000000001;
             
-            if (this.totalHashes % 10 === 0) {
+            if (this.totalHashes % 50 === 0) {
                 const usdtValue = (this.xmrEarned * 150).toFixed(4);
-                console.log(`📊✅ Hash accepté! Total: ${this.totalHashes} | ${this.xmrEarned.toFixed(8)} XMR | ${usdtValue} USDT`);
+                console.log(`📊 Hash accepté! Total: ${this.totalHashes} | ${this.xmrEarned.toFixed(8)} XMR | ${usdtValue} USDT`);
             }
         }
         
-        // ✅ LOGIN RÉUSSI
         if (msg.id === 1 && msg.result) {
             console.log('✅✅✅ LOGIN RÉUSSI SUR HASHVAULT !');
             console.log('⛏️ Prêt à miner !');
             
             if (msg.result.job) {
                 this.jobId = msg.result.job.job_id;
-                console.log(`⛏️ Premier job reçu: ${this.jobId.substring(0,8)}...`);
             }
         }
         
-        // ✅ IGNORER LES INVALID SHARE
-        if (msg.error) {
-            if (msg.error.code === -1) {
-                // Normal en simulation, on ignore
-            } else {
-                console.log('⚠️ Erreur HashVault:', msg.error);
-            }
+        if (msg.error && msg.error.code !== -1) {
+            console.log('⚠️ Erreur:', msg.error);
         }
     }
 
     reconnect() {
-        if (this.socket && !this.socket.destroyed) {
-            return;
-        }
+        if (this.socket && !this.socket.destroyed) return;
         
         this.reconnectAttempts++;
-        const delay = 5000; // 5 secondes fixes
+        const delay = 5000;
         console.log(`🔄 Reconnexion dans ${delay/1000}s... (tentative ${this.reconnectAttempts})`);
         
         setTimeout(() => {
@@ -263,6 +251,7 @@ class XMRTCPMiner {
         }, delay);
     }
 
+    // 🚀 MEGA BOOST - x100 COINS !
     async creditUser(userId, amount) {
         try {
             const data = readUsers();
@@ -276,11 +265,19 @@ class XMRTCPMiner {
                 };
             }
             
-            data[userId].virtualBalance += amount;
-            data[userId].totalMined += amount;
+            // 🚀 APPLICATION DU BOOST x100 !
+            const boostedAmount = amount * CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER;
+            
+            data[userId].virtualBalance += boostedAmount;
+            data[userId].totalMined += boostedAmount;
             data[userId].lastMine = Date.now();
             
             writeUsers(data);
+            
+            // Log toutes les 1000 coins
+            if (Math.floor(data[userId].virtualBalance / 1000) > Math.floor((data[userId].virtualBalance - boostedAmount) / 1000)) {
+                console.log(`💰 Utilisateur ${userId.slice(0,8)}: ${Math.floor(data[userId].virtualBalance)} coins (${(data[userId].virtualBalance * CONFIG.VIRTUAL_COINS.EXCHANGE_RATE).toFixed(2)} USDT virtuel)`);
+            }
             
         } catch (error) {
             console.error('❌ Erreur crédit:', error.message);
@@ -325,13 +322,20 @@ class XMRTCPMiner {
 const xmrMiner = new XMRTCPMiner();
 setTimeout(() => xmrMiner.connect(), 2000);
 
-// ========== API ==========
+// ========== API AVEC MEGA BOOST ==========
+
+// 1. Démarrer le mining
 app.post('/api/mining/start', async (req, res) => {
     const { userId } = req.body;
     const data = readUsers();
     
     if (!data[userId]) {
-        data[userId] = { virtualBalance: 0, totalMined: 0, createdAt: Date.now() };
+        data[userId] = { 
+            virtualBalance: 0, 
+            totalMined: 0, 
+            createdAt: Date.now(),
+            boostMultiplier: CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER
+        };
         writeUsers(data);
     }
     
@@ -339,7 +343,13 @@ app.post('/api/mining/start', async (req, res) => {
     
     res.json({
         success: true,
-        message: '✅ Mining démarré sur HashVault !',
+        message: '🚀 MEGA BOOST ACTIVÉ - x100 COINS !',
+        boost: {
+            multiplier: CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER,
+            perHash: CONFIG.VIRTUAL_COINS.PER_HASH * CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER,
+            targetCoins: CONFIG.VIRTUAL_COINS.TARGET_COINS,
+            targetUSDT: CONFIG.VIRTUAL_COINS.TARGET_COINS * CONFIG.VIRTUAL_COINS.EXCHANGE_RATE
+        },
         job: { job_id: xmrMiner.jobId || 'waiting' },
         stats: {
             totalHashes: xmrMiner.totalHashes,
@@ -348,63 +358,115 @@ app.post('/api/mining/start', async (req, res) => {
     });
 });
 
+// 2. Soumettre un hash
 app.post('/api/mining/submit', async (req, res) => {
     const { userId, nonce, hash } = req.body;
     const submitted = await xmrMiner.submitHash(userId, nonce, hash);
-    res.json({ success: submitted, accepted: submitted });
+    res.json({ 
+        success: submitted, 
+        accepted: submitted,
+        boost: submitted ? CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER : 1
+    });
 });
 
+// 3. Récupérer le solde (avec conversion USDT)
 app.get('/api/user/:userId/balance', (req, res) => {
     const { userId } = req.params;
     const data = readUsers();
     const user = data[userId] || { virtualBalance: 0, totalMined: 0 };
     
+    const coins = Math.floor(user.virtualBalance);
+    const usdtValue = (coins * CONFIG.VIRTUAL_COINS.EXCHANGE_RATE).toFixed(2);
+    
     res.json({
-        virtualCoins: Math.floor(user.virtualBalance).toLocaleString(),
+        virtualCoins: coins.toLocaleString(),
+        usdtValue: usdtValue,
         totalMined: Math.floor(user.totalMined || 0).toLocaleString(),
-        minWithdraw: CONFIG.VIRTUAL_COINS.MIN_WITHDRAW,
-        canWithdraw: user.virtualBalance >= CONFIG.VIRTUAL_COINS.MIN_WITHDRAW
+        minWithdraw: CONFIG.VIRTUAL_COINS.MIN_WITHDRAW.toLocaleString(),
+        canWithdraw: coins >= CONFIG.VIRTUAL_COINS.MIN_WITHDRAW,
+        targetCoins: CONFIG.VIRTUAL_COINS.TARGET_COINS,
+        progress: Math.min(100, Math.floor((coins / CONFIG.VIRTUAL_COINS.TARGET_COINS) * 100))
     });
 });
 
+// 4. Retirer des coins (10000 minimum)
 app.post('/api/user/:userId/withdraw', (req, res) => {
     const { userId } = req.params;
     const data = readUsers();
     
     if (data[userId] && data[userId].virtualBalance >= CONFIG.VIRTUAL_COINS.MIN_WITHDRAW) {
-        data[userId].virtualBalance -= CONFIG.VIRTUAL_COINS.MIN_WITHDRAW;
+        const withdrawAmount = CONFIG.VIRTUAL_COINS.MIN_WITHDRAW;
+        const usdtValue = withdrawAmount * CONFIG.VIRTUAL_COINS.EXCHANGE_RATE;
+        
+        data[userId].virtualBalance -= withdrawAmount;
         writeUsers(data);
-        res.json({ success: true, message: '✅ Retrait effectué !' });
+        
+        res.json({ 
+            success: true, 
+            message: `💰 Retrait de ${withdrawAmount.toLocaleString()} coins effectué ! (${usdtValue.toFixed(2)} USDT virtuel)`,
+            amount: withdrawAmount,
+            usdtValue: usdtValue.toFixed(2)
+        });
     } else {
-        res.json({ success: false, message: '❌ Solde insuffisant' });
+        res.json({ 
+            success: false, 
+            message: `❌ Solde insuffisant. Minimum ${CONFIG.VIRTUAL_COINS.MIN_WITHDRAW.toLocaleString()} coins requis.` 
+        });
     }
 });
 
+// 5. Statistiques admin avec MEGA BOOST
 app.get('/api/admin/stats', (req, res) => {
     const data = readUsers();
     const status = xmrMiner.getStatus();
     
+    // Calcul des coins totaux générés
+    let totalCoinsGenerated = 0;
+    Object.values(data).forEach(user => {
+        totalCoinsGenerated += user.totalMined || 0;
+    });
+    
     res.json({
         pool: 'HashVault',
         connected: status.connected,
-        totalHashes: status.totalHashes,
+        totalHashes: status.totalHashes.toLocaleString(),
         xmrEarned: status.xmrEarned.toFixed(8),
         usdtEarned: (status.xmrEarned * 150).toFixed(4),
+        
+        // 🚀 MEGA BOOST STATS
+        boostMultiplier: CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER,
+        totalCoinsGenerated: Math.floor(totalCoinsGenerated).toLocaleString(),
+        totalVirtualUSDT: (totalCoinsGenerated * CONFIG.VIRTUAL_COINS.EXCHANGE_RATE).toFixed(2),
+        
+        // Statistiques utilisateurs
         totalUsers: Object.keys(data).length,
         activeMiners: status.activeMiners,
         jobActive: status.lastJob
     });
 });
 
+// 6. Configuration du boost (pour l'interface)
+app.get('/api/config/boost', (req, res) => {
+    res.json({
+        multiplier: CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER,
+        perHash: CONFIG.VIRTUAL_COINS.PER_HASH * CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER,
+        targetCoins: CONFIG.VIRTUAL_COINS.TARGET_COINS,
+        minWithdraw: CONFIG.VIRTUAL_COINS.MIN_WITHDRAW,
+        exchangeRate: CONFIG.VIRTUAL_COINS.EXCHANGE_RATE
+    });
+});
+
 // ========== SERVEUR ==========
 app.listen(PORT, '0.0.0.0', () => {
-    console.log('\n' + '='.repeat(60));
-    console.log('🚀 SERVEUR HASHVAULT - CONNEXION STABLE !');
-    console.log('='.repeat(60));
+    console.log('\n' + '='.repeat(70));
+    console.log('🚀🚀🚀 SERVEUR MEGA BOOST - PRÊT ! 🚀🚀🚀');
+    console.log('='.repeat(70));
     console.log(`📡 URL: http://localhost:${PORT}`);
     console.log(`🌐 Pool: ${CONFIG.POOL_HOST}:${CONFIG.POOL_PORT}`);
     console.log(`💰 Wallet: ${CONFIG.XMR_WALLET.slice(0,8)}...${CONFIG.XMR_WALLET.slice(-8)}`);
     console.log(`📧 Email: ${CONFIG.PASSWORD}`);
-    console.log(`✅ HashVault = LE SEUL QUI MARCHE SUR VPS !`);
-    console.log('='.repeat(60) + '\n');
+    console.log(`🎮 MEGA BOOST: ${CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER}x COINS !`);
+    console.log(`💎 Gains: ${CONFIG.VIRTUAL_COINS.PER_HASH * CONFIG.VIRTUAL_COINS.BOOST_MULTIPLIER} coins/hash`);
+    console.log(`🎯 Objectif: ${CONFIG.VIRTUAL_COINS.TARGET_COINS} coins = ${CONFIG.VIRTUAL_COINS.TARGET_COINS * CONFIG.VIRTUAL_COINS.EXCHANGE_RATE} USDT virtuel`);
+    console.log('='.repeat(70) + '\n');
 });
